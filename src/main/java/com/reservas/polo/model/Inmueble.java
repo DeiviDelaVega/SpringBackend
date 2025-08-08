@@ -11,62 +11,62 @@ import jakarta.validation.constraints.Size;
 @Table(name = "Inmueble")
 public class Inmueble {
 	@Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "ID_Inmueble")
-    private int id;
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "ID_Inmueble")
+	private int id;
 
-    @NotBlank(message = "El nombre no puede estar vacío")
-    @Size(max = 100, message = "El nombre no debe exceder los 100 caracteres")
-    @Column(name = "Nombre", nullable = false, length = 100)
-    private String nombre;
+	@NotBlank(message = "El nombre no puede estar vacío")
+	@Size(max = 100, message = "El nombre no debe exceder los 100 caracteres")
+	@Column(name = "Nombre", nullable = false, length = 100)
+	private String nombre;
 
-    @NotNull(message = "La capacidad no puede estar vacio")
-    @Positive(message = "La capacidad debe ser un número positivo")
-    @Column(name = "Capacidad", nullable = false)
-    private int capacidad;
+	@NotNull(message = "La capacidad no puede estar vacio")
+	@Positive(message = "La capacidad debe ser un número positivo")
+	@Column(name = "Capacidad", nullable = false)
+	private int capacidad;
 
-    @NotNull(message = "El numero de habitaciones no puede estar vacio")
-    @Positive(message = "El numero de habitaciones debe ser un número positivo")
-    @Column(name = "Numero_Habitaciones", nullable = false)
-    private int numeroHabitaciones;
-    
-    @NotNull
-    @NotBlank(message = "La descripcion no puede estar vacio")
-    @Size(max = 300, message = "La descripcion no debe exceder los 300 caracteres")
-    @Column(name = "Descripcion", length = 300, nullable = false)
-    private String descripcion;
+	@NotNull(message = "El numero de habitaciones no puede estar vacio")
+	@Positive(message = "El numero de habitaciones debe ser un número positivo")
+	@Column(name = "Numero_Habitaciones", nullable = false)
+	private int numeroHabitaciones;
 
-    @NotNull
-    @NotBlank(message = "Los servicios incluidos no pueden estar vacios")
-    @Size(max = 200, message = "Los servicios incluidos no deben exceder los 200 caracteres")
-    @Column(name = "Servicios_Incluidos", length = 200, nullable = false)
-    private String serviciosIncluidos;
+	@NotNull
+	@NotBlank(message = "La descripcion no puede estar vacio")
+	@Size(max = 300, message = "La descripcion no debe exceder los 300 caracteres")
+	@Column(name = "Descripcion", length = 300, nullable = false)
+	private String descripcion;
 
-    @Column(name = "Disponibilidad", length = 2)
-    private String disponibilidad;
+	@NotNull
+	@NotBlank(message = "Los servicios incluidos no pueden estar vacios")
+	@Size(max = 200, message = "Los servicios incluidos no deben exceder los 200 caracteres")
+	@Column(name = "Servicios_Incluidos", length = 200, nullable = false)
+	private String serviciosIncluidos;
 
-    @NotNull(message = "El precio por noche no puede estar vacio")
-    @Positive(message = "El precio por noche debe ser un número positivo")
-    @Column(name = "Precio_Por_Noche", precision = 10, scale = 2, nullable = false)
-    private BigDecimal precioPorNoche;
+	@Column(name = "Disponibilidad", length = 2)
+	private String disponibilidad;
 
-    @Size(max = 300, message = "La imagen de la habitacion no debe exceder los 300 caracteres")
-    @Column(name = "Imagen_Habitacion", length = 300, nullable = false)
-    private String imagenHabitacion;
+	@NotNull(message = "El precio por noche no puede estar vacio")
+	@Positive(message = "El precio por noche debe ser un número positivo")
+	@Column(name = "Precio_Por_Noche", precision = 10, scale = 2, nullable = false)
+	private BigDecimal precioPorNoche;
 
-    @NotNull(message = "Debe seleccionar un administrador")
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "ID_Administrador")
-    private Administrador administrador;
-    
-    @NotNull(message = "Debe seleccionar una ubicación")
-    @Column(name = "Latitud", precision = 10, scale = 8)
-    private BigDecimal latitud;
+	@Size(max = 300, message = "La imagen de la habitacion no debe exceder los 300 caracteres")
+	@Column(name = "Imagen_Habitacion", length = 300, nullable = false)
+	private String imagenHabitacion;
 
-    @NotNull(message = "Debe seleccionar una ubicación")
-    @Column(name = "Longitud", precision = 11, scale = 8)
-    private BigDecimal longitud;
-	
+	@NotNull(message = "Debe seleccionar un administrador")
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "ID_Administrador")
+	private Administrador administrador;
+
+	@NotNull(message = "Debe seleccionar una ubicación")
+	@Column(name = "Latitud", precision = 10, scale = 8)
+	private BigDecimal latitud;
+
+	@NotNull(message = "Debe seleccionar una ubicación")
+	@Column(name = "Longitud", precision = 11, scale = 8)
+	private BigDecimal longitud;
+
 	public Inmueble(
 			@NotBlank(message = "El nombre no puede estar vacío") @Size(max = 100, message = "El nombre no debe exceder los 100 caracteres") String nombre,
 			@NotNull(message = "La capacidad no puede estar vacio") @Positive(message = "La capacidad debe ser un número positivo") int capacidad,
@@ -93,9 +93,9 @@ public class Inmueble {
 	}
 
 	public Inmueble() {
-		
+
 	}
-	
+
 	public int getId() {
 		return id;
 	}
@@ -167,8 +167,8 @@ public class Inmueble {
 	public void setImagenHabitacion(String imagenHabitacion) {
 		this.imagenHabitacion = imagenHabitacion;
 	}
-	
-    public BigDecimal getLatitud() {
+
+	public BigDecimal getLatitud() {
 		return latitud;
 	}
 

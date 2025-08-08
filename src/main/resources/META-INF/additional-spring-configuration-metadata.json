@@ -8,12 +8,15 @@
     "name": "stripe.secret.key",
     "type": "java.lang.String",
     "description": "A description for 'stripe.secret.key'"
-  }
-]} "description": "A description for 'admin.email'"
   },
   {
-    "name": "stripe.secret.key",
+    "name": "spring.devtools.restart.enabled",
     "type": "java.lang.String",
-    "description": "A description for 'stripe.secret.key'"
+    "description": "A description for 'spring.devtools.restart.enabled'"
+  },
+  {
+    "name": "spring.devtools.add-properties",
+    "type": "java.lang.String",
+    "description": "A description for 'spring.devtools.add-properties'"
   }
 ]}

@@ -8,23 +8,23 @@ import java.time.LocalDateTime;
 @Table(name = "Pago")
 public class Pago {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "ID_Pago")
-    private Integer idPago;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "ID_Pago")
+	private Integer idPago;
 
-    @OneToOne
-    @JoinColumn(name = "id_solicitud")
-    private Reserva reserva;
-    
-    @Column(name = "Fecha_Pago") 
-    private LocalDateTime fechaPago;
+	@OneToOne
+	@JoinColumn(name = "id_solicitud")
+	private Reserva reserva;
 
-    private BigDecimal monto;
+	@Column(name = "Fecha_Pago")
+	private LocalDateTime fechaPago;
 
-    @Column(name = "stripe_payment_id")
-    private String stripePaymentId;
-    
+	private BigDecimal monto;
+
+	@Column(name = "stripe_payment_id")
+	private String stripePaymentId;
+
 	public Pago() {
 	}
 
@@ -85,10 +85,4 @@ public class Pago {
 		this.stripePaymentId = stripePaymentId;
 	}
 
-	
-    
-	
-
-    
-    
 }

@@ -19,40 +19,40 @@ import lombok.Setter;
 @Table(name = "Administrador")
 public class Administrador {
 	@Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "ID_Administrador")
-    private Integer id;
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "ID_Administrador")
+	private Integer id;
 
-    @NotNull
-    @Size(max = 100)
-    @Column(name = "Nombre", nullable = false, length = 100)
-    private String nombre;
+	@NotNull
+	@Size(max = 100)
+	@Column(name = "Nombre", nullable = false, length = 100)
+	private String nombre;
 
-    @NotNull
-    @Size(max = 100)
-    @Column(name = "Apellido", nullable = false, length = 100)
-    private String apellido;
+	@NotNull
+	@Size(max = 100)
+	@Column(name = "Apellido", nullable = false, length = 100)
+	private String apellido;
 
-    @NotNull
-    @Size(max = 50)
-    @Column(name = "Nro_Documento", nullable = false, length = 50, unique = true)
-    private String nroDocumento;
+	@NotNull
+	@Size(max = 50)
+	@Column(name = "Nro_Documento", nullable = false, length = 50, unique = true)
+	private String nroDocumento;
 
-    @NotNull
-    @Size(max = 50)
-    @Column(name = "Telefono", nullable = false, length = 50)
-    private String telefono;
+	@NotNull
+	@Size(max = 50)
+	@Column(name = "Telefono", nullable = false, length = 50)
+	private String telefono;
 
-    @NotNull
-    @Email
-    @Size(max = 50)
-    @Column(name = "Correo", nullable = false, length = 50, unique = true)
-    private String correo;
+	@NotNull
+	@Email
+	@Size(max = 50)
+	@Column(name = "Correo", nullable = false, length = 50, unique = true)
+	private String correo;
 
 	public Administrador() {
 
 	}
-	
+
 	public Administrador(Integer id, @NotNull @Size(max = 100) String nombre, @NotNull @Size(max = 100) String apellido,
 			@NotNull @Size(max = 50) String nroDocumento, @NotNull @Size(max = 50) String telefono,
 			@NotNull @Email @Size(max = 50) String correo) {
@@ -124,4 +124,3 @@ public class Administrador {
 		this.correo = correo;
 	}
 }
-
