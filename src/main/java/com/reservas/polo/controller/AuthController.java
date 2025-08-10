@@ -1,6 +1,9 @@
 package com.reservas.polo.controller;
 
 import java.util.Map;
+package com.reservas.polo.controller;
+
+import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -74,9 +77,7 @@ public class AuthController {
 	}
 	
 	@GetMapping("/me")
-	public Map<String, Object> me(Authentication auth) {
-		return Map.of("email", auth.getName(), "role", auth.getAuthorities().stream().findFirst().get().getAuthority());
-	}
-
-	
+public Map<String, Object> me(Authentication auth) {
+        return Map.of("email", auth.getName(), "role", auth.getAuthorities().stream().findFirst().get().getAuthority());
+    }
 }
