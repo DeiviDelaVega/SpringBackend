@@ -15,11 +15,6 @@ public class ClienteController {
 
 	@Autowired
 	ClienteService clienteService;
-	
-	@GetMapping("/ping")
-	public String ping() {
-		return "ok cliente";
-	}
 
 	// Ejemplo: dashboard del cliente
 	@GetMapping("/home")

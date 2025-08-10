@@ -2,6 +2,8 @@ package com.reservas.polo.service.Impl;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -32,9 +34,9 @@ public class ClienteServiceImpl implements ClienteService {
 
 	@Override
 	@Transactional
-	public void registrarCliente(Cliente cliente, String clave) {
+	public Cliente registrarCliente(Cliente cliente, String clave) {
 		cliente.setFechaRegistro(LocalDateTime.now());
-		clienteRepository.save(cliente);
+		Cliente c = clienteRepository.save(cliente);
 		usuarioService.registrarUsuario(cliente.getCorreo(), clave, Rol.cliente);
 
 		String asunto = "Bienvenido a Polo Web Reservas";
@@ -50,6 +52,7 @@ public class ClienteServiceImpl implements ClienteService {
 		} catch (MessagingException e) {
 			e.printStackTrace();
 		}
+		return c;
 	}
 
 	@Override
@@ -65,10 +68,15 @@ public class ClienteServiceImpl implements ClienteService {
 
 	@Override
 	@Transactional(readOnly = true)
-	public Cliente obtenerClientePorId(Integer id) {
-		return clienteRepository.findById(id).get();
+	public Optional<Cliente> obtenerClientePorId(Integer id) {
+		return clienteRepository.findById(id);
 	}
 
+	@Override
+	public Cliente guardarCliente(Cliente cliente) {
+		return clienteRepository.save(cliente);
+	}
+	
 	@Override
 	public Cliente actualizarCliente(Cliente cliente) {
 		return clienteRepository.save(cliente);
@@ -93,9 +101,10 @@ public class ClienteServiceImpl implements ClienteService {
 		}
 		return clienteRepository.filtrarPorApellidoONroDocumento(filtro.trim(), pageable);
 	}
-
+	
 	@Override
 	public List<Object[]> obtenerClientesMasReservas() {
 		return clienteRepository.contarReservasPorCliente();
 	}
+
 }

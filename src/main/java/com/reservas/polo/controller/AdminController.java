@@ -14,11 +14,6 @@ import com.reservas.polo.service.AdminService;
 public class AdminController {
 	@Autowired
 	AdminService adminService;
-	
-	@GetMapping("/ping")
-	public String ping() {
-		return "ok admin";
-	}
 
 	// Ejemplo: dashboard del admin
 	@GetMapping("/home")

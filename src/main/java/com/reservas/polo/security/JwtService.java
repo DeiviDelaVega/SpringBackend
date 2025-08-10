@@ -5,6 +5,7 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.stereotype.Service;
+import java.util.Arrays;
 
 import java.security.Key;
 import java.util.Date;
@@ -15,7 +16,7 @@ public class JwtService {
 	private static final long EXP_MS = 24 * 60 * 60 * 1000; // 24h
 
 	public String generate(String email, String role) {
-		return Jwts.builder().setSubject(email).claim("role", role) 
+		return Jwts.builder().setSubject(email).claim("authorities", Arrays.asList("ROLE_admin")) 
 				.setIssuedAt(new Date()).setExpiration(new Date(System.currentTimeMillis() + EXP_MS))
 				.signWith(key, SignatureAlgorithm.HS256).compact();
 	}

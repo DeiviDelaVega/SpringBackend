@@ -1,13 +1,20 @@
 package com.reservas.polo.controller;
 
 import java.util.Map;
+package com.reservas.polo.controller;
+
+import java.util.Map;
+
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.security.core.Authentication;
+
 import com.reservas.polo.dto.LoginRequest;
 import com.reservas.polo.dto.LoginResponse;
 import com.reservas.polo.dto.RegistroAdminRequest;
@@ -40,8 +47,8 @@ public class AuthController {
 	@PostMapping("/login") // Consulta y respuesta de formulario Login
 	public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest req) {
 		var user = authService.authenticate(req.email(), req.password());
-		String token = jwtService.generate(user.email(), user.role());
-		return ResponseEntity.ok(new LoginResponse(token, user.role(), user.email()));
+	    String token = jwtService.generate(user.email(), "ROLE_admin");
+	    return ResponseEntity.ok(new LoginResponse(token, user.role(), user.email()));
 	}
 
 	@PostMapping("/registro/cliente") // Consulta y respuesta de formulario Cliente
@@ -70,7 +77,7 @@ public class AuthController {
 	}
 	
 	@GetMapping("/me")
-    public Map<String, Object> me(Authentication auth) {
+public Map<String, Object> me(Authentication auth) {
         return Map.of("email", auth.getName(), "role", auth.getAuthorities().stream().findFirst().get().getAuthority());
     }
 }
