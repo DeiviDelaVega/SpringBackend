@@ -25,7 +25,7 @@ import com.reservas.polo.model.Cliente;
 import com.reservas.polo.service.ClienteService;
 
 @RestController
-@RequestMapping("/api/admin")
+@RequestMapping("/api/admin/clienteAdmin")
 public class ClienteAdminController {
 
 	@Autowired
@@ -33,7 +33,7 @@ public class ClienteAdminController {
 
 	
 	//Listar todos los Clientes
-		@GetMapping("/clienteAdmin")
+		@GetMapping
 		public List<Cliente> listarTodosLosClientes(){
 			return servicio.listarTodosLosClientes();
 		}
@@ -46,7 +46,7 @@ public class ClienteAdminController {
 
 		
 		//Detalles
-		@GetMapping("/clienteAdmin/{id}")
+		@GetMapping("/{id}")
 	    public ResponseEntity<Cliente> obtenerClientePorId(@PathVariable Integer id){
 	        Cliente existente = servicio.obtenerClientePorId(id)
 	                .orElseThrow(() -> new ResourceNotFoundException("No existe el cliente con el ID : " + id));
@@ -54,7 +54,7 @@ public class ClienteAdminController {
 	    }	
 		
 		//Guardar
-	    @PutMapping("/clienteAdmin/actualizar/{id}")
+	    @PutMapping("/actualizar/{id}")
 	    public ResponseEntity<Cliente> actualizarCliente(@PathVariable Integer id,@RequestBody Cliente cliente){
 	        Cliente existente = servicio.obtenerClientePorId(id)
 	                .orElseThrow(() -> new ResourceNotFoundException("No existe el cliente con el ID : " + id));
@@ -73,7 +73,7 @@ public class ClienteAdminController {
 	    
 		
 	    //Eliminar
-	    @DeleteMapping("/clienteAdmin/{id}")
+	    @DeleteMapping("/{id}")
 		public ResponseEntity<Map<String,Boolean>> eliminarCliente(@PathVariable Integer id) {
 	    	Cliente cliente = servicio.obtenerClientePorId(id)
 	    			.orElseThrow(() -> new ResourceNotFoundException("No existe el cliente con el ID : " + id));
@@ -86,7 +86,7 @@ public class ClienteAdminController {
 
 	    //Paginacion y Filtros
 	    
-	    @GetMapping("/clienteAdmin/paginado")
+	    @GetMapping("/paginado")
 	    public Page<Cliente> listarClientesPaginados(
 	            @RequestParam(defaultValue = "0") int page,
 	            @RequestParam(defaultValue = "5") int size) {
@@ -94,7 +94,7 @@ public class ClienteAdminController {
 	        return servicio.listarTodoPaginacion(pageable);
 	    }
 
-	    @GetMapping("/clienteAdmin/paginacionFiltro")
+	    @GetMapping("/paginacionFiltro")
 	    public Page<Cliente> listarClientesPaginadosConFiltro(
 	            @RequestParam String filtro,
 	            @RequestParam(defaultValue = "0") int page,
