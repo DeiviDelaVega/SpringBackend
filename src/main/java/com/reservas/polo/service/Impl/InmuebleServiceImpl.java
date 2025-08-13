@@ -3,16 +3,24 @@ package com.reservas.polo.service.Impl;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import com.reservas.polo.dto.CreateInmuebleRequest;
+import com.reservas.polo.dto.DetalleInmuebleResponse;
 import com.reservas.polo.model.Inmueble;
 import com.reservas.polo.repository.InmuebleRepository;
 // import com.reservas.polo.repository.ReservaRepository;
 import com.reservas.polo.service.InmuebleService;
+
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 
 @Service
 public class InmuebleServiceImpl implements InmuebleService {
@@ -22,6 +30,9 @@ public class InmuebleServiceImpl implements InmuebleService {
 
 	//@Autowired
 	//private ReservaRepository reservaRepository;
+	
+	@PersistenceContext
+	private EntityManager em;
 	
 	@Override
 	public List<Inmueble> listarTodo() {
@@ -34,8 +45,8 @@ public class InmuebleServiceImpl implements InmuebleService {
 	}
 
 	@Override
-	public Inmueble obtenerPorId(int id) {
-		return repositorio.findById(id).get();
+	public Optional<Inmueble> obtenerPorId(int id) {
+		return repositorio.findById(id);
 	}
 
 	@Override
@@ -128,5 +139,26 @@ public class InmuebleServiceImpl implements InmuebleService {
 	@Override
 	public void actualizarUbicacion(Double lat, Double lng, int idInmueble) {
 		repositorio.actualizarUbicacion(lat, lng, idInmueble);
+	}
+
+	@Override
+	public DetalleInmuebleResponse obtenerDetalle(int id) {
+	    Inmueble inmueble = em.find(Inmueble.class, id);
+	    if (inmueble == null) {
+	        return null;
+	    }
+	    return new DetalleInmuebleResponse(
+	        inmueble.getId(),
+	        inmueble.getNombre(),
+	        inmueble.getCapacidad(),
+	        inmueble.getNumeroHabitaciones(),
+	        inmueble.getDescripcion(),
+	        inmueble.getServiciosIncluidos(),
+	        inmueble.getDisponibilidad(),
+	        inmueble.getPrecioPorNoche(),
+	        inmueble.getImagenHabitacion(),
+	        inmueble.getLatitud(),
+	        inmueble.getLongitud()
+	    );
 	}
 }
