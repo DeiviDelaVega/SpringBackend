@@ -3,12 +3,13 @@ package com.reservas.polo.controller;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
+import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
@@ -16,12 +17,15 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import org.springframework.http.HttpStatus;
+import com.reservas.polo.dto.CreateInmuebleRequest;
+import com.reservas.polo.dto.DetalleInmuebleResponse;
+import com.reservas.polo.dto.EditarInmuebleRequest;
 import com.reservas.polo.model.Administrador;
 import com.reservas.polo.model.Inmueble;
 // import com.reservas.polo.repository.ReservaRepository;
@@ -29,7 +33,6 @@ import com.reservas.polo.service.AdminService;
 import com.reservas.polo.service.CloudinaryService;
 import com.reservas.polo.service.InmuebleService;
 import jakarta.validation.Valid;
-import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 
 @Controller
@@ -46,7 +49,8 @@ public class InmuebleController {
 	
 	//@Autowired
 	//private ReservaRepository reservaRepository;
-
+	
+	// LISTADO
 	@GetMapping
     public ResponseEntity<Map<String, Object>> listar(
         @RequestParam(name = "page", defaultValue = "0") int page,
@@ -71,143 +75,142 @@ public class InmuebleController {
         return ResponseEntity.ok(response);
     }
 	
-	/*
-	public String listar(@RequestParam(name = "page", defaultValue = "0") int page, 
-						@RequestParam(name = "filtro", required = false) String filtro, 
-						@RequestParam(name = "disponibilidad", required = false) String disponibilidad,
-						@RequestParam(name = "adminId", required = false) Integer adminId,
-						Model modelo) {
-		Pageable pageRequest = PageRequest.of(page, 5);	// Cuantas filas con los datos de Inmueble van haber
-		Page<Inmueble> inmuebles = inmuService.listarTodoConFiltroYDisponibilidadYAdmin(filtro, disponibilidad, adminId, pageRequest);
-		PageRender<Inmueble> pageRender = new PageRender<>("/admin/inmueble/inmuebles", inmuebles);
-		List<Administrador> administradores = admiService.listarTodo();
-		
-		boolean hayFiltros = 
-		        (filtro != null && !filtro.trim().isEmpty()) ||
-		        (disponibilidad != null && !disponibilidad.trim().isEmpty()) ||
-		        adminId != null;
-		
-		modelo.addAttribute("titulo","Lista de Inmuebles");
-		modelo.addAttribute("inmuebles", inmuebles);
-		modelo.addAttribute("lista", inmuebles.getContent());
-		modelo.addAttribute("page", pageRender);
-		modelo.addAttribute("filtro", filtro);
-		modelo.addAttribute("disponibilidad", disponibilidad); 
-		modelo.addAttribute("adminId", adminId);
-	    modelo.addAttribute("administradores", administradores);
-	    modelo.addAttribute("hayFiltros", hayFiltros);
-	    
-		return "admin/inmueble/MantInmueble";
-	}*/
+	// CREAR
+	@PostMapping(value = "/guardar", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> guardar(
+            @ModelAttribute @Valid CreateInmuebleRequest req,
+            BindingResult br,
+            @RequestParam(value = "file", required = false) MultipartFile file) {
 
-	/*
-	@GetMapping("/inmuebles/nuevo")
-	public String mostrarFormularioDeRegistro(Model modelo) {
-		Inmueble inmueble = new Inmueble();
-		inmueble.setAdministrador(new Administrador());
-		modelo.addAttribute("inmueble", inmueble);
-		return "admin/inmueble/CrearInmueble";
-	}
+        // Validación del DTO
+        if (br.hasErrors()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(br.getAllErrors());
+        }
 
-	@PostMapping("/inmuebles")
-	public String guardar(@Valid @ModelAttribute("inmueble") Inmueble inmueble,
-	                      BindingResult result,
-	                      @RequestParam("file") MultipartFile file,
-	                      RedirectAttributes redirectAttributes,
-	                      Model model) {
-		
-	    boolean tieneErrores = result.getFieldErrors().stream()
-	        .anyMatch(error -> !error.getField().equals("imagenHabitacion"));
+        // Obtener admin autenticado
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String correo = auth.getName();
+        Administrador admin = admiService.findByCorreo(correo);
+        if (admin == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("No se encontró el administrador autenticado");
+        }
 
-	    if (inmueble.getId() == 0 && (file == null || file.isEmpty())) {
-	        model.addAttribute("error", "Debe seleccionar una imagen");
-	        return "admin/inmueble/CrearInmueble";
-	    }
-	    
-	    if (tieneErrores) {
-	        return "admin/inmueble/CrearInmueble";
-	    }
-	    
-	    if (inmueble.getLatitud() == null || inmueble.getLongitud() == null) {
-	        model.addAttribute("error", "Debe seleccionar una ubicación en el mapa");
-	        return "admin/inmueble/CrearInmueble";
-	    }
-	    
-	    if (inmueble.getId() == 0) { 
-	        if (file == null || file.isEmpty()) {
-	            model.addAttribute("error", "Debe seleccionar una imagen");
-	            return "admin/inmueble/CrearInmueble";
-	        }
+        boolean esNuevo = req.id() == 0;
 
-	        String contentType = file.getContentType();
-	        if (contentType == null || !contentType.startsWith("image/")) {
-	            model.addAttribute("error", "Solo se permiten archivos de imagen (JPG, PNG, etc)");
-	            return "admin/inmueble/CrearInmueble";
-	        }
+        // Reglas de imagen
+        if (esNuevo) {
+            if (file == null || file.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Debe seleccionar una imagen");
+            }
+            String contentType = file.getContentType();
+            if (contentType == null || !contentType.startsWith("image/")) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Solo se permiten archivos de imagen (JPG, PNG, etc.)");
+            }
+        }
 
-	        String url = clouService.SubirImagen(file);
-	        inmueble.setImagenHabitacion(url);
-	    }
+        // Subir imagen si llega
+        String urlImagen = null;
+        if (file != null && !file.isEmpty()) {
+            try {
+                urlImagen = clouService.SubirImagen(file);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .body("Error subiendo la imagen: " + ex.getMessage());
+            }
+        }
 
-	    Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-	    String correo = auth.getName();
-	    Administrador admin = admiService.findByCorreo(correo);
-	    inmueble.setAdministrador(admin);
+        // Construir entidad
+        Inmueble entidad = new Inmueble();
+        entidad.setId(req.id());
+        entidad.setNombre(req.nombre());
+        entidad.setCapacidad(req.capacidad());
+        entidad.setNumeroHabitaciones(req.numeroHabitaciones());
+        entidad.setDescripcion(req.descripcion());
+        entidad.setServiciosIncluidos(req.serviciosIncluidos());
+        entidad.setDisponibilidad(req.disponibilidad());
+        entidad.setPrecioPorNoche(req.precioPorNoche());
+        entidad.setLatitud(req.latitud());
+        entidad.setLongitud(req.longitud());
+        entidad.setAdministrador(admin);
 
-	    inmuService.guardar(inmueble);
-	    redirectAttributes.addFlashAttribute("agregado", true);
-	    return "redirect:/admin/inmueble/inmuebles";
-	}
+        if (urlImagen != null) {
+            entidad.setImagenHabitacion(urlImagen);
+        } else if (!esNuevo) {
+            try {
+                Optional<Inmueble> existenteOpt = inmuService.obtenerPorId(req.id()); 
+                existenteOpt.ifPresent(existente -> entidad.setImagenHabitacion(existente.getImagenHabitacion()));
+            } catch (Exception ignore) {
+            }
+        }
 
-	@GetMapping("/inmuebles/detalle/{id}")
-	public String verDetalleInmueble(@PathVariable int id, Model modelo) {
-		modelo.addAttribute("inmueble", inmuService.obtenerPorId(id));
-		return "admin/inmueble/DetalleInmueble";
-	}
-
-	@GetMapping("/inmuebles/editar/{id}")
-	public String mostrarFormularioEditar(@PathVariable int id, Model modelo) {
-		modelo.addAttribute("inmueble", inmuService.obtenerPorId(id));
-		return "admin/inmueble/EditarInmueble";
-	}
+        // Guardar
+        try {
+            inmuService.guardar(entidad);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error guardando inmueble: " + ex.getMessage());
+        }
+        return ResponseEntity.ok().build();
+    }
 	
-	@PostMapping("/inmuebles/{id}")
-	public String actualizar(@PathVariable int id,
-	                         @ModelAttribute("inmueble") Inmueble inmueble,
-	                         @RequestParam(value = "file", required = false) MultipartFile file,
-	                         Model model,
-	                         RedirectAttributes redirectAttributes) {
-		try {
-	        Inmueble inmuebleExistente = inmuService.obtenerPorId(id);
-	        inmuebleExistente.setId(id);
-	        inmuebleExistente.setNombre(inmueble.getNombre());
-	        inmuebleExistente.setCapacidad(inmueble.getCapacidad());
-	        inmuebleExistente.setNumeroHabitaciones(inmueble.getNumeroHabitaciones());
-	        inmuebleExistente.setDescripcion(inmueble.getDescripcion());
-	        inmuebleExistente.setServiciosIncluidos(inmueble.getServiciosIncluidos());
-	        inmuebleExistente.setDisponibilidad(inmueble.getDisponibilidad());
-	        inmuebleExistente.setPrecioPorNoche(inmueble.getPrecioPorNoche());
-
-	        if (file != null && !file.isEmpty()) {
-	            if (inmuebleExistente.getImagenHabitacion() != null && !inmuebleExistente.getImagenHabitacion().isEmpty()) {
-	                clouService.eliminarImagenPorUrl(inmuebleExistente.getImagenHabitacion());
-	            }
-	            String url = clouService.SubirImagen(file);
-	            inmuebleExistente.setImagenHabitacion(url);
-	        }
-
-	        inmuebleExistente.setLatitud(inmueble.getLatitud());
-	        inmuebleExistente.setLongitud(inmueble.getLongitud());
-	        inmuebleExistente.setAdministrador(inmueble.getAdministrador());
-
-	        inmuService.actualizar(inmuebleExistente);
-	        redirectAttributes.addFlashAttribute("actualizado", true);
-	    } catch (Exception e) {
-	        redirectAttributes.addFlashAttribute("actualizado", false);
+	// DETALLE
+	@GetMapping("/detalle/{id}")
+	public ResponseEntity<?> obtenerDetalle(@PathVariable int id) {
+	    DetalleInmuebleResponse detalle = inmuService.obtenerDetalle(id);
+	    if (detalle == null) {
+	        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Inmueble no encontrado");
 	    }
-	    return "redirect:/admin/inmueble/inmuebles";
+	    return ResponseEntity.ok(detalle);
 	}
-	*/
+
+	// EDITAR
+	@PutMapping(value = "/editar/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> actualizarInmueble(
+            @PathVariable int id,
+            @RequestPart("dto") @Valid EditarInmuebleRequest dto,
+            @RequestPart(value = "file", required = false) MultipartFile file) {
+		
+		// Obtener inmueble
+        Inmueble inmueble = inmuService.obtenerPorId(id)
+                .orElseThrow(() -> new RuntimeException("Inmueble no encontrado"));
+        
+        // Obtener administrador autenticado
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String correo = auth.getName();
+        Administrador admin = admiService.findByCorreo(correo);
+        if (admin == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("No se encontró el administrador autenticado");
+        }
+
+        // Subir imagen si se envía
+        if (file != null && !file.isEmpty()) {
+            if (inmueble.getImagenHabitacion() != null) {
+                clouService.eliminarImagenPorUrl(inmueble.getImagenHabitacion());
+            }
+            String url = clouService.SubirImagen(file);
+            inmueble.setImagenHabitacion(url);
+        }
+
+        // Actualizar campos desde el DTO
+        inmueble.setNombre(dto.nombre());
+        inmueble.setCapacidad(dto.capacidad());
+        inmueble.setNumeroHabitaciones(dto.numeroHabitaciones());
+        inmueble.setDescripcion(dto.descripcion());
+        inmueble.setServiciosIncluidos(dto.serviciosIncluidos());
+        inmueble.setDisponibilidad(dto.disponibilidad());
+        inmueble.setPrecioPorNoche(dto.precioPorNoche());
+        inmueble.setLatitud(dto.latitud());
+        inmueble.setLongitud(dto.longitud());
+        inmueble.setAdministrador(admin);
+
+        inmuService.actualizar(inmueble);
+        
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "Inmueble actualizado correctamente");
+        return ResponseEntity.ok(response);
+    }
 	
 	/*
 	@GetMapping("/inmuebles/{id}")
@@ -226,4 +229,5 @@ public class InmuebleController {
 	    }
 	    return "redirect:/admin/inmueble/inmuebles";
 	}*/
+	// Se necesita de reserva para avanzar esta parte
 }
