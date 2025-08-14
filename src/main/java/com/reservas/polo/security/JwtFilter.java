@@ -52,7 +52,7 @@ public class JwtFilter extends OncePerRequestFilter {
 	            var claims = jwt.parse(auth.substring(7));
 	            String email = claims.getSubject();
 	            @SuppressWarnings("unchecked")
-	            List<String> roles = (List<String>) claims.get("authorities"); // 🔁 CAMBIO AQUÍ
+	            List<String> roles = (List<String>) claims.get("authorities"); 
 	            var authorities = roles.stream()
 	            		.map(r-> r.startsWith("ROLE_") ? r : "ROLE_"+r)
 	            		.map(SimpleGrantedAuthority::new).toList();
