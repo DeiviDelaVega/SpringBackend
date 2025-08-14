@@ -1,7 +1,9 @@
 package com.reservas.polo.controller;
 
+import java.io.IOException;
 import java.util.Map;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,6 +20,7 @@ import com.reservas.polo.model.Cliente;
 import com.reservas.polo.security.JwtService;
 import com.reservas.polo.service.AdminService;
 import com.reservas.polo.service.AuthService;
+import com.reservas.polo.service.CaptchaService;
 import com.reservas.polo.service.ClienteService;
 
 @RestController
@@ -28,27 +31,38 @@ public class AuthController {
 	private final AdminService adminService;
 	private final AuthService authService;
 	private final JwtService jwtService;
+	private final CaptchaService captchaService;
 
 	public AuthController(ClienteService clienteService, AdminService adminService, AuthService authService,
-			JwtService jwtService) {
+			JwtService jwtService, CaptchaService captchaService) {
 		super();
 		this.clienteService = clienteService;
 		this.adminService = adminService;
 		this.authService = authService;
 		this.jwtService = jwtService;
+		this.captchaService = captchaService;
 	}
+	
+	@PostMapping("/captcha")
+	  public ResponseEntity<Map<String, String>> captcha() throws IOException {
+	    return ResponseEntity.ok(captchaService.generate());
+	  }
+
 
 	@PostMapping("/login")
 	public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest req) {
+		
+		if (!captchaService.verifyAndInvalidate(req.captchaId(), req.captchaCode())) {
+		      return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+		    }
+		
 	    var user = authService.authenticate(req.email(), req.password()); // debe devolver email y role (admin|cliente)
 
-	    // Normaliza: agrega prefijo ROLE_ si no viene
 	    String role = user.role();
 	    role = (role != null && role.startsWith("ROLE_")) ? role : "ROLE_" + role;
 
 	    String token = jwtService.generate(user.email(), role); // ✅ rol real
 
-	    // Devuelve el role coherente con el token
 	    return ResponseEntity.ok(new LoginResponse(token, role, user.email()));
 	}
 
