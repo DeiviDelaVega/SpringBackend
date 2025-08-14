@@ -16,7 +16,11 @@ public class JwtService {
 	private static final long EXP_MS = 24 * 60 * 60 * 1000; // 24h
 
 	public String generate(String email, String role) {
-		return Jwts.builder().setSubject(email).claim("authorities", Arrays.asList("ROLE_admin")) 
+		
+		String normalized = (role != null && role.startsWith("ROLE_")) ? role : "ROLE_" + role;
+		
+		return Jwts.builder().setSubject(email)
+				.claim("authorities", java.util.List.of(normalized))
 				.setIssuedAt(new Date()).setExpiration(new Date(System.currentTimeMillis() + EXP_MS))
 				.signWith(key, SignatureAlgorithm.HS256).compact();
 	}
