@@ -38,12 +38,20 @@ public class AuthController {
 		this.jwtService = jwtService;
 	}
 
-	@PostMapping("/login") // Consulta y respuesta de formulario Login
+	@PostMapping("/login")
 	public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest req) {
-		var user = authService.authenticate(req.email(), req.password());
-	    String token = jwtService.generate(user.email(), "ROLE_admin");
-	    return ResponseEntity.ok(new LoginResponse(token, user.role(), user.email()));
+	    var user = authService.authenticate(req.email(), req.password()); // debe devolver email y role (admin|cliente)
+
+	    // Normaliza: agrega prefijo ROLE_ si no viene
+	    String role = user.role();
+	    role = (role != null && role.startsWith("ROLE_")) ? role : "ROLE_" + role;
+
+	    String token = jwtService.generate(user.email(), role); // ✅ rol real
+
+	    // Devuelve el role coherente con el token
+	    return ResponseEntity.ok(new LoginResponse(token, role, user.email()));
 	}
+
 
 	@PostMapping("/registro/cliente") // Consulta y respuesta de formulario Cliente
 	public ResponseEntity<Void> registrarCliente(@RequestBody RegistroClienteRequest r) {
