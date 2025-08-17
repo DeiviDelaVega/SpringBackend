@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -24,6 +25,7 @@ import com.reservas.polo.model.Inmueble;
 import com.reservas.polo.service.ClienteService;
 import com.reservas.polo.service.InmuebleService;
 import com.reservas.polo.service.ReservaService;
+import java.time.format.DateTimeFormatter;
 
 @RestController
 @RequestMapping("/api/cliente/catalogo")
@@ -102,22 +104,29 @@ public class CatalogoController {
     }
 
     @GetMapping("/detalle/{id}")
-    public Optional<Inmueble> verDetalleInmueble(@PathVariable int id) {
-        return inmuebleService.obtenerPorId(id);
+    public ResponseEntity<Inmueble> verDetalleInmueble(@PathVariable Integer id) {
+        return inmuebleService.obtenerPorId(id)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @GetMapping("/ocupadas/{idInmueble}")
-    public List<LocalDate> obtenerFechasOcupadas(@PathVariable Long idInmueble) {
-        return reservaService.obtenerFechasOcupadas(idInmueble);
+    public ResponseEntity<List<String>> obtenerFechasOcupadas(@PathVariable Long idInmueble) {
+        List<LocalDate> fechas = reservaService.obtenerFechasOcupadas(idInmueble);
+        List<String> iso = new ArrayList<>();
+        if (fechas != null) {
+            for (LocalDate f : fechas) iso.add(DateTimeFormatter.ISO_LOCAL_DATE.format(f));
+        }
+        return ResponseEntity.ok(iso);
     }
 
     @GetMapping("/terminos")
-    public String mostrarTerminosCondiciones() {
-        return "Aquí iría el texto de los términos y condiciones"; // o leer de DB/archivo
+    public ResponseEntity<String> mostrarTerminosCondiciones() {
+        return ResponseEntity.ok("Aquí iría el texto de los términos y condiciones");
     }
 
     @GetMapping("/MotivoSancion")
-    public String verMotivoSancion() {
-        return "Motivo de sanción: incumplimiento de normas del servicio.";
+    public ResponseEntity<String> verMotivoSancion() {
+        return ResponseEntity.ok("Motivo de sanción: incumplimiento de normas del servicio.");
     }
 }
