@@ -14,9 +14,9 @@ public interface ReservaRepository extends JpaRepository<Reserva, Long> {
     Page<Reserva> findByEstadoReserva(String estado, Pageable pageable);
     Page<Reserva> findByFechaInicioBetween(LocalDate fechaInicio, LocalDate fechaFin, Pageable pageable);
     List<Reserva> findByInmuebleId(Long idInmueble);
+    boolean existsByInmuebleId(int idInmueble);
     @Query("SELECT r FROM Reserva r WHERE r.cliente.correo = :correo")
     Page<Reserva> findByCorreoCliente(@Param("correo") String correo, Pageable pageable);
     @Query("SELECT r.inmueble.nombre, COUNT(r) FROM Reserva r GROUP BY r.inmueble.nombre ORDER BY COUNT(r) DESC")
     List<Object[]> contarReservasPorInmueble();
-
 }
