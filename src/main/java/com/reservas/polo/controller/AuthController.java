@@ -2,7 +2,6 @@ package com.reservas.polo.controller;
 
 import java.io.IOException;
 import java.util.Map;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -11,6 +10,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.validation.BindingResult;
 import com.reservas.polo.dto.LoginRequest;
 import com.reservas.polo.dto.LoginResponse;
 import com.reservas.polo.dto.RegistroAdminRequest;
@@ -22,6 +22,7 @@ import com.reservas.polo.service.AdminService;
 import com.reservas.polo.service.AuthService;
 import com.reservas.polo.service.CaptchaService;
 import com.reservas.polo.service.ClienteService;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -50,13 +51,13 @@ public class AuthController {
 
 
 	@PostMapping("/login")
-	public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest req) {
+	public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest req) {
 		
 		if (!captchaService.verifyAndInvalidate(req.captchaId(), req.captchaCode())) {
-		      return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+		      return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new LoginResponse(null, null, "Captcha inválido"));
 		    }
 		
-	    var user = authService.authenticate(req.email(), req.password()); // debe devolver email y role (admin|cliente)
+	    var user = authService.authenticate(req.email(), req.password()); // Debe devolver email y role (admin|cliente)
 
 	    String role = user.role();
 	    role = (role != null && role.startsWith("ROLE_")) ? role : "ROLE_" + role;
@@ -68,7 +69,16 @@ public class AuthController {
 
 
 	@PostMapping("/registro/cliente") // Consulta y respuesta de formulario Cliente
-	public ResponseEntity<Void> registrarCliente(@RequestBody RegistroClienteRequest r) {
+	public ResponseEntity<?> registrarCliente(@Valid @RequestBody RegistroClienteRequest r, BindingResult result) {
+		if (result.hasErrors()) {
+            // Devolver lista de errores
+            var errores = result.getFieldErrors()
+                    .stream()
+                    .map(err -> err.getField() + ": " + err.getDefaultMessage())
+                    .toList();
+            return ResponseEntity.badRequest().body(errores);
+        }
+		
 		var c = new Cliente();
 		c.setNombre(r.nombre());
 		c.setApellido(r.apellido());
@@ -81,7 +91,16 @@ public class AuthController {
 	}
 
 	@PostMapping("/registro/admin") // Consulta y respuesta de formulario Admin
-	public ResponseEntity<Void> registrarAdmin(@RequestBody RegistroAdminRequest r) {
+	public ResponseEntity<?> registrarAdmin(@Valid @RequestBody RegistroAdminRequest r, BindingResult result) {
+		if (result.hasErrors()) {
+            // Devolver lista de errores
+            var errores = result.getFieldErrors()
+                    .stream()
+                    .map(err -> err.getField() + ": " + err.getDefaultMessage())
+                    .toList();
+            return ResponseEntity.badRequest().body(errores);
+        }
+		
 		var a = new Administrador();
 		a.setNombre(r.nombre());
 		a.setApellido(r.apellido());

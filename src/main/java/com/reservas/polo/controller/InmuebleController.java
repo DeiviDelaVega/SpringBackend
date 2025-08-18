@@ -13,6 +13,7 @@ import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -28,7 +29,7 @@ import com.reservas.polo.dto.DetalleInmuebleResponse;
 import com.reservas.polo.dto.EditarInmuebleRequest;
 import com.reservas.polo.model.Administrador;
 import com.reservas.polo.model.Inmueble;
-// import com.reservas.polo.repository.ReservaRepository;
+import com.reservas.polo.repository.ReservaRepository;
 import com.reservas.polo.service.AdminService;
 import com.reservas.polo.service.CloudinaryService;
 import com.reservas.polo.service.InmuebleService;
@@ -47,8 +48,8 @@ public class InmuebleController {
 	@Autowired
 	private CloudinaryService clouService;
 	
-	//@Autowired
-	//private ReservaRepository reservaRepository;
+	@Autowired
+	private ReservaRepository reservaRepository;
 	
 	// LISTADO
 	@GetMapping
@@ -212,22 +213,26 @@ public class InmuebleController {
         return ResponseEntity.ok(response);
     }
 	
-	/*
-	@GetMapping("/inmuebles/{id}")
-	public String eliminar(@PathVariable int id, RedirectAttributes redirectAttributes) {
-	    Inmueble inmueble = inmuService.obtenerPorId(id);
-	    if (inmueble != null) {
-	    	if (reservaRepository.existsByInmuebleId(id)) {
-	            redirectAttributes.addFlashAttribute("errorInmueble", "No se puede eliminar el inmueble porque tiene reservas asociadas");
-	            return "redirect:/admin/inmueble/inmuebles";
-	        }
-	        if (inmueble.getImagenHabitacion() != null && !inmueble.getImagenHabitacion().isEmpty()) {
-	            clouService.eliminarImagenPorUrl(inmueble.getImagenHabitacion());
-	        }
-	        inmuService.eliminar(id);	        
-	        redirectAttributes.addFlashAttribute("eliminado", true);
-	    }
-	    return "redirect:/admin/inmueble/inmuebles";
-	}*/
-	// Se necesita de reserva para avanzar esta parte
+	@DeleteMapping("/eliminar/{id}")
+    public ResponseEntity<?> eliminar(@PathVariable int id) {
+        return inmuService.obtenerPorId(id).map(inmueble -> {
+
+            // Validar reservas asociadas
+            if (reservaRepository.existsByInmuebleId(id)) {
+                return ResponseEntity.status(HttpStatus.CONFLICT)
+                        .body(Map.of("error", "Este inmueble tiene reservas asociadas"));
+            }
+
+            // Eliminar imagen si existe
+            if (inmueble.getImagenHabitacion() != null && !inmueble.getImagenHabitacion().isEmpty()) {
+                clouService.eliminarImagenPorUrl(inmueble.getImagenHabitacion());
+            }
+
+            // Eliminar inmueble
+            inmuService.eliminar(id);
+            return ResponseEntity.ok(Map.of("mensaje", "Inmueble eliminado correctamente"));
+
+        }).orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(Map.of("error", "El inmueble no existe")));
+    }
 }

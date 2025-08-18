@@ -4,21 +4,17 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import com.reservas.polo.dto.CreateInmuebleRequest;
 import com.reservas.polo.dto.DetalleInmuebleResponse;
 import com.reservas.polo.model.Inmueble;
 import com.reservas.polo.repository.InmuebleRepository;
-// import com.reservas.polo.repository.ReservaRepository;
+import com.reservas.polo.repository.ReservaRepository;
 import com.reservas.polo.service.InmuebleService;
-
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 
@@ -28,8 +24,8 @@ public class InmuebleServiceImpl implements InmuebleService {
 	@Autowired
 	private InmuebleRepository repositorio;
 
-	//@Autowired
-	//private ReservaRepository reservaRepository;
+	@Autowired
+	private ReservaRepository reservaRepository;
 	
 	@PersistenceContext
 	private EntityManager em;
@@ -54,14 +50,13 @@ public class InmuebleServiceImpl implements InmuebleService {
 		return repositorio.save(inmueble);
 	}
 
-	/*
 	@Override
 	public void eliminar(int id) {
 		if(reservaRepository.existsByInmuebleId(id)){
 			throw new IllegalStateException("No se puede eliminar un inmueble con reservas asociadas");
 		}
 		repositorio.deleteById(id);
-	}*/
+	}
 
 	@Override
 	@Transactional(readOnly = true)

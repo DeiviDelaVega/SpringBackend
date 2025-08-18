@@ -20,7 +20,7 @@ public interface InmuebleService {
 	public Optional<Inmueble> obtenerPorId(int id);
 	public DetalleInmuebleResponse obtenerDetalle(int id);
 	public Inmueble actualizar(Inmueble inmueble);
-	//public void eliminar(int id);
+	public void eliminar(int id);
 	public Page<Inmueble> listarConFiltrosAvanzados( String filtro,Double precioDesde, Double precioHasta,LocalDate fechaDesde,
 		    LocalDate fechaHasta, String estado,Pageable pageable);
 	public void actualizarUbicacion(Double lat, Double lng, int idInmueble);
