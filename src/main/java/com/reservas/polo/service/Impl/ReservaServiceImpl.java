@@ -72,13 +72,6 @@ public class ReservaServiceImpl implements ReservaService {
 
 
 	@Override
-	public Page<Reserva> listarReservasPorCliente(String correo, Pageable pageable) {
-	    return reservaRepository.findByCorreoCliente(correo, pageable);
-	}
-	
-
-
-	@Override
 	public void actualizarEstado(Long id, String nuevoEstado) {
 	    Optional<Reserva> opt = reservaRepository.findById(id);
 	    if (opt.isPresent()) {
@@ -88,7 +81,10 @@ public class ReservaServiceImpl implements ReservaService {
 	    }
 	}
 
-
+	@Override
+	public Page<Reserva> listarReservasPorCliente(String correo, Pageable pageable) {
+	    return reservaRepository.findByCorreoCliente(correo, pageable);
+	}
 	
 	@Override
 	public List<Object[]> obtenerInmueblesMasReservados() {
